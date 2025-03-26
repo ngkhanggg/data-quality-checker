@@ -11,6 +11,10 @@ class DQTool(ABC):
         self.logger = logger
         self.spark = spark
         self.dq_config = dq_config
+        self.source_data = None
+        self.dest_data = None
+        self.hashed_source_data = None
+        self.hashed_dest_data = None
 
     @abstractmethod
     def run(self):
