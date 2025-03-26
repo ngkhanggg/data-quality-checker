@@ -1,4 +1,4 @@
-# Data Quality Checker
+# Data Quality Workflow
 
 I would like to implement data quality check methods to ensure data accuracy, completeness, reliability, and consistency.
 
