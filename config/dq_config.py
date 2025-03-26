@@ -39,5 +39,21 @@ class DQConfig:
             logger.exception(f"dq_check_logger - An Exception was raised while getting config_table: {e}")
             raise e
 
+    def is_config_valid(self):
+        errors = [
+            (len(self.source_columns) != len(self.dest_columns), 'Source and Destination columns do not match'),
+            (len(self.source_biz_keys) != len(self.dest_biz_keys), 'Source and Destination biz keys do not match'),
+            (self.source_database == '' or self.source_database is None, 'Source database cannot be empty'),
+            (self.source_table == '' or self.source_table is None, 'Source table cannot be empty'),
+            (self.dest_database == '' or self.dest_database is None, 'Destination database cannot be empty'),
+            (self.dest_table == '' or self.dest_table is None, 'Destination table cannot be empty')
+        ]
+
+        for condition, message in errors:
+            if condition:
+                self.logger.exception(f"dq_check_config - {message}")
+
+        return not any(condition for condition, message in errors)
+
     def __str__(self):
         return json.dumps(self.__dict__, indent=4)
