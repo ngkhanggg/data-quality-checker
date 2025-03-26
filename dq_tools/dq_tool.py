@@ -23,6 +23,30 @@ class DQTool(ABC):
         self.hashed_source_data = None
         self.hashed_dest_data = None
 
+    def get_data_source(self, source_type: str):
+        connection = ''
+        database_name = ''
+        table_name = ''
+
+        source_mapping = {
+            'source': (self.dq_config.source_connection, self.dq_config.source_database, self.dq_config.source_table),
+            'dest': (self.dq_config.dest_connection, self.dq_config.dest_database, self.dq_config.dest_table),
+        }
+
+        if source_type in source_mapping:
+            connection, database_name, table_name = source_mapping[source_type]
+        else:
+            self.logger.exception('dq_check_logger - Invalid source type')
+
+        if connection == '' or connection is None:
+            self.logger.info('dq_check_logger - A connection was not provided, reading from glue_catalog')
+            df = self.spark.read.table(f"{database_name}.{table_name}")
+        else:
+            self.logger.info('dq_check_logger - A connection was provided, reading from glue_connection')
+            df = None
+
+        return df
+
     @abstractmethod
     def run(self):
         ...
