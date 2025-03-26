@@ -2,8 +2,15 @@ import json
 
 from abc import ABC, abstractmethod
 
+from pyspark.sql.functions import col, concat_ws, sha2
+
 # My modules
 from config.dq_config import DQConfig
+
+
+def concat_hash_columns(df, df_columns, column_name):
+    new_df = df.withColumn(column_name, sha2(concat_ws('', *[col(c).cast('string') for c in df_columns]), 256))
+    return new_df
 
 
 class DQTool(ABC):
