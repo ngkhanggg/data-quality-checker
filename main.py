@@ -99,7 +99,7 @@ def start_dq(list_config):
     global logger, glue_job_args, spark
 
     for item in list_config:
-        dq_config = DQConfig(logger, item)
+        dq_config = DQConfig(item)
 
         print(dq_config)
 
