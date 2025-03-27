@@ -46,6 +46,9 @@ print(json.dumps(glue_job_args, indent=4))
 
 # ========================= Spark & GlueContext =========================
 
+account_id = glue_job_args['p_account_id']
+raw_bucket = glue_job_args['p_raw_bucket']
+
 list_spark_conf = [
     ("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"),
     ("spark.sql.catalog.glue_catalog", "org.apache.iceberg.spark.SparkCatalog"),
@@ -53,12 +56,18 @@ list_spark_conf = [
     ("spark.sql.catalog.glue_catalog.glue.id", account_id),
     ("spark.sql.catalog.glue_catalog.glue.lakeformation-enabled", "true"),
     ("spark.sql.catalog.glue_catalog.io-impl", "org.apache.iceberg.aws.s3.S3FileIO"),
-    ("spark.sql.catalog.glue_catalog.warehouse", f"s3://{raw_bucket}/")
+    ("spark.sql.catalog.glue_catalog.warehouse", f"s3://{raw_bucket}/"),
+
+    ("spark.sql.legacy.parquet.int96RebaseModeInRead", "CORRECTED"),
+    ("spark.sql.legacy.parquet.int96RebaseModeInWrite", "CORRECTED"),
+    ("spark.sql.legacy.parquet.datetimeRebaseModeInRead", "CORRECTED"),
+    ("spark.sql.legacy.parquet.datetimeRebaseModeInWrite", "CORRECTED")
 ]
 
 spark_conf = SparkConf().setAll(list_spark_conf)
 spark_context = SparkContext(conf=spark_conf)
 spark_session = SparkSession(spark_context).builder.enableHiveSupport().getOrCreate()
+spark_session.sql('use glue_catalog')
 
 glue_context = GlueContext(spark_context)
 
