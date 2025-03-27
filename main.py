@@ -170,11 +170,8 @@ class DQTool(ABC):
 
         try:
             if connection == '' or connection is None:
-                self.logger.info('dq_check_logger: A connection was not provided, start reading from glue_catalog')
-                df = glue_context.create_data_frame.from_catalog(
-                    database=database,
-                    table_name=table
-                )
+                self.logger.info('dq_check_logger - A connection was not provided, start reading from glue_catalog')
+                df = self.spark_session.read.format('iceberg').load(f"glue_catalog.{database}.{table}")
             else:
                 self.logger.info('dq_check_logger - A connection was provided, start reading from glue_connection')
                 df = glue_context.create_data_frame.from_options(
