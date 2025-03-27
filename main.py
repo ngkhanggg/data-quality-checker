@@ -56,7 +56,7 @@ glue_job_args = getResolvedOptions(sys.argv, [
 
     # REQUIREMENTS TO CONFIG JOB
     'dq_check_id',
-    'dq_check_group_id'
+    'dq_check_group_id',
     'dq_config_database',
     'dq_config_table'
 ])
