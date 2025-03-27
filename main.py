@@ -155,12 +155,28 @@ class DQTool(ABC):
 
         connection, database, table = source_mapping[source_type]
 
-        if connection == '' or connection is None:
-            self.logger.info('dq_check_logger - A connection was not provided, start reading from glue_catalog')
-            pass
-        else:
-            self.logger.info('dq_check_logger - A connection was provided, start reading from glue_connection')
-            pass
+        try:
+            if connection == '' or connection is None:
+                self.logger.info('dq_check_logger: A connection was not provided, start reading from glue_catalog')
+                df = glue_context.create_data_frame.from_catalog(
+                    database=database,
+                    table_name=table
+                )
+            else:
+                self.logger.info('dq_check_logger: A connection was provided, start reading from glue_connection')
+                df = glue_context.create_data_frame.from_options(
+                    connection_type='postgresql',
+                    connection_options={
+                        'useConnectionProperties': 'true',
+                        'dbtable': f"{database}.{table}",
+                        'connectionName': connection
+                    }
+                )
+        except Exception as e:
+            self.logger.exception(f"dq_check_logger: An error occurred when getting data source: {e}")
+            df = None
+        finally:
+            return df
 
     def concat_hash_columns(self, df, df_columns, column_name):
         return df.withColumn(column_name, sha2(concat_ws('', *[col(c).cast('string') for c in df_columns]), 256))
