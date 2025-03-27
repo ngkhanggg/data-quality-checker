@@ -198,6 +198,55 @@ class DataReconciliation(DQTool):
 
         return invalid_records
 
+    def run(self):
+        # Run steps in parent class
+        super().run()
+
+        # Concat source_biz_key_columns then hash them
+        hashed_source_data = self.concat_hash_columns(
+            df=self.source_data,
+            df_columns=self.dq_config.source_biz_keys,
+            column_name='primary_key'
+        )
+
+        # Concat source_columns then hash them
+        hashed_source_data = self.concat_hash_columns(
+            df=hashed_source_data,
+            df_columns=self.dq_config.source_columns,
+            column_name='hash_key'
+        )
+
+        self.hashed_source_data = hashed_source_data
+
+        del hashed_source_data  # Release memory
+
+        # Concat dest_biz_key_columns then hash them
+        hashed_dest_data = self.concat_hash_columns(
+            df=self.dest_data,
+            df_columns=self.dq_config.dest_biz_keys,
+            column_name='primary_key'
+        )
+
+        # Concat dest_columns then hash them
+        hashed_dest_data = self.concat_hash_columns(
+            df=hashed_dest_data,
+            df_columns=self.dq_config.dest_columns,
+            column_name='hash_key'
+        )
+
+        self.hashed_dest_data = hashed_dest_data
+
+        del hashed_dest_data  # Release memory
+
+        missing_records = self.get_missing_records()
+        invalid_records = self.get_invalid_records()
+
+        self.logger.info(f"dq_check_logger: Missing records = {missing_records.count()}")
+        self.logger.info(f"dq_check_logger: Invalid records = {invalid_records.count()}")
+
+        missing_records.show(5)
+        invalid_records.show(5)
+
 # ========================= Main =========================
 
 job.commit()
