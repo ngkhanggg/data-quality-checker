@@ -286,4 +286,9 @@ def start():
             logger.info(f"dq_check_logger: Config is invalid > Check again for id({dq_config.id}) group_id({dq_config.group_id})")
 
 
+with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+    futures = [executor.submit(start)]
+    concurrent.futures.wait(futures)
+    [future.result() for future in futures]
+
 job.commit()
