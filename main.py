@@ -153,10 +153,7 @@ class DQTool(ABC):
             'dest': (self.dq_config.dest_connection, self.dq_config.dest_database, self.dq_config.dest_table)
         }
 
-        if source_type in source_mapping:
-            connection, database, table = source_mapping[source_type]
-        else:
-            self.logger('dq_check_logger - Invalid source_type')
+        connection, database, table = source_mapping[source_type]
 
         if connection == '' or connection is None:
             self.logger.info('dq_check_logger - A connection was not provided, start reading from glue_catalog')
