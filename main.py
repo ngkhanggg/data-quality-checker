@@ -10,12 +10,19 @@ from awsglue.utils import getResolvedOptions
 # My modules
 from config.dq_config import DQConfig
 
-
 # ================================================== SparkConfig ==================================================
 
 class MySpark:
     def __init__(self, account_id, bucket):
-        self.list_conf = []
+        self.list_conf = [
+            ("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"),
+            ("spark.sql.catalog.glue_catalog", "org.apache.iceberg.spark.SparkCatalog"),
+            ("spark.sql.catalog.glue_catalog.catalog-impl", "org.apache.iceberg.aws.glue.GlueCatalog"),
+            ("spark.sql.catalog.glue_catalog.glue.id", account_id),
+            ("spark.sql.catalog.glue_catalog.glue.lakeformation-enabled", "true"),
+            ("spark.sql.catalog.glue_catalog.io-impl", "org.apache.iceberg.aws.s3.S3FileIO"),
+            ("spark.sql.catalog.glue_catalog.warehouse", f"s3://{self.bucket_name}/")
+        ]
         self.context = None
         self.session = None
 
