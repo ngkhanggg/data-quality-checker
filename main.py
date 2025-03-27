@@ -21,7 +21,7 @@ class MySpark:
             ("spark.sql.catalog.glue_catalog.glue.id", account_id),
             ("spark.sql.catalog.glue_catalog.glue.lakeformation-enabled", "true"),
             ("spark.sql.catalog.glue_catalog.io-impl", "org.apache.iceberg.aws.s3.S3FileIO"),
-            ("spark.sql.catalog.glue_catalog.warehouse", f"s3://{self.bucket_name}/")
+            ("spark.sql.catalog.glue_catalog.warehouse", f"s3://{bucket}/")
         ]
         self.context = None
         self.session = None
