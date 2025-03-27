@@ -121,10 +121,10 @@ class DQConfig:
             self.dest_database: str = dict_config['dest_database']
             self.dest_table: str = dict_config['dest_table']
         except ValueError as ve:
-            print(f"A ValueError was raised while getting config_table: {ve}")
+            print(f"A ValueError was raised while getting config_table: {str(ve)}")
             raise ve
         except Exception as e:
-            print(f"An Exception was raised while getting config_table: {e}")
+            print(f"An Exception was raised while getting config_table: {str(e)}")
             raise e
 
     def is_config_valid(self):
@@ -176,7 +176,7 @@ class DQTool(ABC):
                     table_name=table
                 )
             else:
-                self.logger.info('dq_check_logger: A connection was provided, start reading from glue_connection')
+                self.logger.info('dq_check_logger - A connection was provided, start reading from glue_connection')
                 df = glue_context.create_data_frame.from_options(
                     connection_type='postgresql',
                     connection_options={
@@ -186,7 +186,7 @@ class DQTool(ABC):
                     }
                 )
         except Exception as e:
-            self.logger.exception(f"dq_check_logger: An error occurred when getting data source: {e}")
+            self.logger.exception(f"dq_check_logger - An error occurred when getting data source: {str(e)}")
             df = None
         finally:
             return df
@@ -228,6 +228,10 @@ class DataReconciliation(DQTool):
         # Run steps in parent class
         super().run()
 
+        if self.source_data is None or self.dest_data is None:
+            self.logger.exception('dq_check_logger - Source or Dest data is null, cannot process further')
+            return False
+
         # Concat source_biz_key_columns then hash them
         hashed_source_data = self.concat_hash_columns(
             df=self.source_data,
@@ -265,19 +269,19 @@ class DataReconciliation(DQTool):
         del hashed_dest_data  # Release memory
 
         if self.hashed_source_data is None or self.hashed_dest_data is None:
-            self.logger.exception('dq_check_logger: Source or Dest is null, cannot process further')
+            self.logger.exception('dq_check_logger - Source or Dest is null, cannot process further')
             return False
 
         missing_records = self.get_missing_records()
         invalid_records = self.get_invalid_records()
 
-        self.logger.info(f"dq_check_logger: Missing records = {missing_records.count()}")
-        self.logger.info(f"dq_check_logger: Invalid records = {invalid_records.count()}")
+        self.logger.info(f"dq_check_logger - Missing records = {missing_records.count()}")
+        self.logger.info(f"dq_check_logger - Invalid records = {invalid_records.count()}")
 
         missing_records.show(5)
         invalid_records.show(5)
 
-        self.logger.info('dq_check_logger: Data reconciliation completed')
+        self.logger.info('dq_check_logger - Data reconciliation completed')
         return True
 
 # ========================= Main =========================
@@ -291,14 +295,21 @@ def start():
 
         print(json.dumps(dq_config.__dict__, indent=4))
 
-        if is_valid_config:
-            logger.info(f"dq_check_logger: Config is valid > Start id({dq_config.id}) group_id({dq_config.group_id})")
+        if is_config_valid:
+            logger.info(f"dq_check_logger - Config is valid -> Start id({dq_config.id}) group_id({dq_config.group_id})")
             if dq_config.type == 1:
                 dq_tool = DataReconciliation(logger, spark_session, dq_config)
-            dq_tool.run()
-        else:
-            logger.info(f"dq_check_logger: Config is invalid > Check again for id({dq_config.id}) group_id({dq_config.group_id})")
 
+            status = dq_tool.run()
+
+            if status:
+                logger.info('dq_check_logger - Completed successfully')
+            else:
+                logger.info('dq_check_logger - Completed with errors')
+        else:
+            logger.info(f"dq_check_logger - Config is invalid -> Check again for id({dq_config.id}) group_id({dq_config.group_id})")
+
+# ==================================================
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
     futures = [executor.submit(start)]
