@@ -196,8 +196,8 @@ class DQTool(ABC):
 
     @abstractmethod
     def run(self):
-        self.source_data = get_data_source('source')
-        self.dest_data = get_data_source('dest')
+        self.source_data = self.get_data_source('source')
+        self.dest_data = self.get_data_source('dest')
 
 # ========================= Class DataReconciliation =========================
 
