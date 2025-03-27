@@ -246,7 +246,7 @@ class DataReconciliation(DQTool):
             column_name='hash_key'
         )
 
-        self.hashed_source_data = hashed_source_data
+        self.hashed_source_data = hashed_source_data.select([hashed_source_data['primary_key'], hashed_source_data['hash_key']])
 
         del hashed_source_data  # Release memory
 
@@ -264,7 +264,7 @@ class DataReconciliation(DQTool):
             column_name='hash_key'
         )
 
-        self.hashed_dest_data = hashed_dest_data
+        self.hashed_dest_data = hashed_dest_data.select([hashed_dest_data['primary_key'], hashed_dest_data['hash_key']])
 
         del hashed_dest_data  # Release memory
 
