@@ -81,7 +81,7 @@ del df
 # ========================= Class DQConfig =========================
 
 class DQConfig:
-    def __init__(self):
+    def __init__(self, dict_config: dict):
         try:
             self.id: int = int(dict_config['id'])
             self.type: int = int(dict_config['type'])
