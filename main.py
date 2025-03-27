@@ -3,8 +3,11 @@
 import logging
 import sys
 
+from abc import ABC, abstractmethod
+
 from pyspark.context import SparkConf, SparkContext
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, concat_ws, sha2
 
 from awsglue.context import GlueContext
 from awsglue.job import Job
@@ -126,6 +129,49 @@ class DQConfig:
                 print(f"Invalid config: {message}")
 
         return not any(condition for condition, message in errors)
+
+# ========================= Class DQTool =========================
+
+class DQTool(ABC):
+    def __init__(self, logger, spark_session, dq_config):
+        self.logger = logger
+        self.spark_session = spark_session
+        self.dq_config = dq_config
+
+        self.source_data = None
+        self.dest_data = None
+        self.hashed_source_data = None
+        self.hash_dest_data = None
+
+    def get_data_source(self, source_type):
+        connection = ''
+        database = ''
+        table = ''
+
+        source_mapping = {
+            'source': (self.dq_config.source_connection, self.dq_config.source_database, self.dq_config.source_table),
+            'dest': (self.dq_config.dest_connection, self.dq_config.dest_database, self.dq_config.dest_table)
+        }
+
+        if source_type in source_mapping:
+            connection, database, table = source_mapping[source_type]
+        else:
+            self.logger('dq_check_logger - Invalid source_type')
+
+        if connection == '' or connection is None:
+            self.logger.info('dq_check_logger - A connection was not provided, start reading from glue_catalog')
+            pass
+        else:
+            self.logger.info('dq_check_logger - A connection was provided, start reading from glue_connection')
+            pass
+
+    def concat_hash_columns(self, df, df_columns, column_name):
+        return df.withColumn(column_name, sha2(concat_ws('', *[col(c).cast('string') for c in df_columns]), 256))
+
+    @abstractmethod
+    def run(self):
+        self.source_data = get_data_source('source')
+        self.dest_data = get_data_source('dest')
 
 # ========================= Main =========================
 
