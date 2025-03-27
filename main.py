@@ -251,6 +251,10 @@ class DataReconciliation(DQTool):
 
         del hashed_dest_data  # Release memory
 
+        if self.hashed_source_data is None or self.hashed_dest_data is None:
+            self.logger.exception('dq_check_logger: Source or Dest is null, cannot process further')
+            return False
+
         missing_records = self.get_missing_records()
         invalid_records = self.get_invalid_records()
 
@@ -259,6 +263,9 @@ class DataReconciliation(DQTool):
 
         missing_records.show(5)
         invalid_records.show(5)
+
+        self.logger.info('dq_check_logger: Data reconciliation completed')
+        return True
 
 # ========================= Main =========================
 
