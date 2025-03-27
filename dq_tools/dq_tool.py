@@ -51,6 +51,3 @@ class DQTool(ABC):
     def run(self):
         self.source_data = self.get_data_source('source')
         self.dest_data = self.get_data_source('dest')
-
-    def __str__(self):
-        return json.dumps(self.__dict__, indent=4)
