@@ -2,9 +2,7 @@ import json
 
 
 class DQConfig:
-    def __init__(self, logger, dict_config):
-        self.logger = logger
-
+    def __init__(self, dict_config):
         try:
             self.id: int = int(dict_config['id'])
             self.type: int = int(dict_config['type'])
@@ -32,11 +30,11 @@ class DQConfig:
             self.dest_table: str = dict_config['dest_table']
 
         except ValueError as ve:
-            logger.exception(f"dq_check_logger - A ValueError was raised while getting config_table: {ve}")
+            print(f"A ValueError was raised while getting config_table: {ve}")
             raise ve
 
         except Exception as e:
-            logger.exception(f"dq_check_logger - An Exception was raised while getting config_table: {e}")
+            print(f"An Exception was raised while getting config_table: {e}")
             raise e
 
     def is_config_valid(self):
@@ -51,7 +49,7 @@ class DQConfig:
 
         for condition, message in errors:
             if condition:
-                self.logger.exception(f"dq_check_config - {message}")
+                print(f"Invalid config: {message}")
 
         return not any(condition for condition, message in errors)
 
