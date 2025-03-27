@@ -1,6 +1,7 @@
 # ========================= Libs =========================
 
 import concurrent.futures
+import json
 import logging
 import sys
 
@@ -40,6 +41,8 @@ glue_job_args = getResolvedOptions(sys.argv, [
     'job_id',
     'job_group_id'
 ])
+
+print(json.dumps(glue_job_args, indent=4))
 
 # ========================= Spark & GlueContext =========================
 
@@ -275,7 +278,9 @@ def start():
 
     for item in list_config:
         dq_config = DQConfig(item)
-        is_valid_config = dq_config.is_valid_config()
+        is_config_valid = dq_config.is_config_valid()
+
+        print(json.dumps(dq_config.__dict__, indent=4))
 
         if is_valid_config:
             logger.info(f"dq_check_logger: Config is valid > Start id({dq_config.id}) group_id({dq_config.group_id})")
