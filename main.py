@@ -1,5 +1,6 @@
 # ========================= Libs =========================
 
+import concurrent.futures
 import logging
 import sys
 
@@ -268,5 +269,21 @@ class DataReconciliation(DQTool):
         return True
 
 # ========================= Main =========================
+
+def start():
+    global logger, glue_job_args, spark_session, list_config
+
+    for item in list_config:
+        dq_config = DQConfig(item)
+        is_valid_config = dq_config.is_valid_config()
+
+        if is_valid_config:
+            logger.info(f"dq_check_logger: Config is valid > Start id({dq_config.id}) group_id({dq_config.group_id})")
+            if dq_config.type == 1:
+                dq_tool = DataReconciliation(logger, spark_session, dq_config)
+            dq_tool.run()
+        else:
+            logger.info(f"dq_check_logger: Config is invalid > Check again for id({dq_config.id}) group_id({dq_config.group_id})")
+
 
 job.commit()
